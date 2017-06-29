@@ -30,6 +30,31 @@ router.post('/user', jsonParser, (req, res)=>{
 	})
 })
 
+router.post('/login', jsonParser, (req, res)=>{
+	if(!req.body) res.sendStatus(400);
+	
+	User.getAuthenticated(req.body.username, req.body.password, (err, user, reason)=>{
+		if(err) res.sen(err);
+		//login was successfull if we've an user
+		if(user){
+			//handle login success
+			console.log('login success');
+			res.send(user);
+		}
+
+		// otherwise we can determine why we failed
+        var reasons = User.failedLogin;
+        switch (reason) {
+            case reasons.NOT_FOUND:
+            case reasons.PASSWORD_INCORRECT:
+                res.sendStatus(401)
+                break;
+            case reasons.MAX_ATTEMPTS:
+                res.send('MAX_ATTEMPTS reached, Account locked');
+                break;
+        }
+	})
+})
 
 
 module.exports = router;
